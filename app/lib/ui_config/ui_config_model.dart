@@ -181,7 +181,7 @@ enum UiDrawerFilter { all, running, pending, unread }
 
 enum UiDensity { compact, comfortable }
 
-enum UiHideItem { turnFooter, tokenCount, reasoningDetails, activityStrip, whaleTail, todoPill, goalBar, pluginCapsule }
+enum UiHideItem { turnFooter, tokenCount, reasoningDetails, activityStrip, whaleTail, todoPill, goalBar, pluginCapsule, rootPill }
 
 enum UiThemeMode { system, light, dark }
 
