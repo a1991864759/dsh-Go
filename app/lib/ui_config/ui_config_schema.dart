@@ -64,7 +64,8 @@ abstract final class UiSchema {
   /// token figures in it and in the activity strip; reasoningDetails: the
   /// thinking row (thinking_pill.dart); activityStrip, whaleTail; todoPill
   /// and goalBar: the dock bars (chat/dock/); pluginCapsule: the app-owned
-  /// Plugins entry, not the plugins' individual composer actions.
+  /// Plugins entry, not the plugins' individual composer actions; rootPill:
+  /// the terminal-permission pill above the composer (dock/root_pill.dart).
   static const hideItems = [
     'turnFooter',
     'tokenCount',
@@ -74,6 +75,7 @@ abstract final class UiSchema {
     'todoPill',
     'goalBar',
     'pluginCapsule',
+    'rootPill',
   ];
   static const themeModes = ['system', 'light', 'dark'];
 
