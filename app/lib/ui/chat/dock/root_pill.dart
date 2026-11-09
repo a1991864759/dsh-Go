@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../state/phone_state.dart';
+import '../../../ui_config/ui_config_model.dart';
+import '../../../ui_config/ui_config_state.dart';
 import '../../phone/shell_permissions_page.dart';
 import '../../theme/theme.dart';
 import 'dock_pill.dart';
@@ -20,6 +22,10 @@ class RootPill extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ui.json 的 hide 里有 rootPill 就不画（想留高危档又不看胶囊时用）。
+    if (ref.watch(uiHiddenProvider(UiHideItem.rootPill))) {
+      return const SizedBox.shrink();
+    }
     final shell = ref.watch(phoneProvider.select((s) => s.status.shell));
     // 原版模式没有任何终端能力，胶囊只会碍事；要开启去 设置 → 终端权限。
     if (shell.mode != 'safe' && shell.mode != 'full') {
