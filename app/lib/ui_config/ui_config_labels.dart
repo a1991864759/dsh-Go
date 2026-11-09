@@ -22,6 +22,7 @@ Map<UiHideItem, String> get _hideNames => {
   UiHideItem.todoPill: appL10n.shellHideTodoPill,
   UiHideItem.goalBar: appL10n.shellHideGoalBar,
   UiHideItem.pluginCapsule: appL10n.plugslotsChatEntry,
+  UiHideItem.rootPill: appL10n.botsTerminal,
 };
 
 Map<String, String> get _groupNames => {
