@@ -2,8 +2,6 @@ name: build-apk
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 jobs:
   apk:
@@ -38,6 +36,28 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq zstd file gpgv
 
+      - name: Cache runtime image
+        uses: actions/cache@v4
+        with:
+          path: |
+            runtime/out
+            runtime/.cache
+          key: runtime-${{ hashFiles('runtime/build-runtime.sh', 'runtime/locks/*.json') }}
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ hashFiles('app/pubspec.lock') }}
+
+      - name: Cache gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties', 'app/pubspec.lock') }}
+
       - name: Build runtime (arm64-v8a)
         run: bash runtime/build-runtime.sh arm64-v8a
         env:
@@ -49,7 +69,10 @@ jobs:
         run: DSH_BETA_TOKEN_FILE= bash tooling/build-apk.sh -f arm64
 
       - name: Show artifacts
-        run: find app/build/app/outputs -name '*.apk' -exec ls -lh {} \;
+        run: |
+          find app/build/app/outputs -name '*.apk' -exec ls -lh {} \;
+          echo "--- signer ---"
+          $ANDROID_HOME/build-tools/*/apksigner verify --print-certs app/build/app/outputs/flutter-apk/*.apk 2>/dev/null | head -5 || true
 
       - uses: actions/upload-artifact@v4
         with:
