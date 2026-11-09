@@ -40,6 +40,10 @@ jobs:
 
       - name: Build runtime (arm64-v8a)
         run: bash runtime/build-runtime.sh arm64-v8a
+        env:
+          # 上游 noble 归档会把旧 deb 换掉，锁文件里的 ca-certificates 会 404；
+          # 每次都按 InRelease 签名重新解析一遍，顺便把新锁传上来存档。
+          UPDATE_DEB_LOCK: 1
 
       - name: Build APK
         run: DSH_BETA_TOKEN_FILE= bash tooling/build-apk.sh -f arm64
@@ -52,4 +56,12 @@ jobs:
           name: dsh-go-apk-arm64
           path: app/build/app/outputs/flutter-apk/*.apk
           if-no-files-found: error
+          retention-days: 2
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deb-lock-arm64
+          path: runtime/locks/ubuntu-noble-arm64.json
+          if-no-files-found: warn
           retention-days: 2
