@@ -108,6 +108,7 @@
   },
   "searchKwPersonalization": "personalization,preferences,style",
   "searchKwInterface": "native,web,web mode,web app,general",
+  "searchKwCustomUi": "custom,interface,controls,switches,hide,show,capsule,composer",
   "searchKwPrivacy": "privacy,data,logs,sharing,statistics",
   "searchKwAbout": "about,version,update,licenses",
   "searchKwPhoneConfirmEntry": "confirmation,phone control,don't ask",

@@ -20,6 +20,7 @@ import '../../state/attachments.dart';
 import '../../state/balance_state.dart';
 import '../../state/chat_error_text.dart';
 import '../../state/chat_state.dart';
+import '../../state/chat_ui_parts.dart';
 import '../../state/commands_state.dart';
 import '../../state/compose_inbox.dart';
 import '../../state/composer_insert.dart';
@@ -1509,6 +1510,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     final running = chat?.running ?? false;
     final pillsBesideStrip = sessionId != null && running && !typing;
     final pillsInCapsules = !readOnly && !running && !typing;
+    // 设置 → 自定义界面：关掉的控件不画，也不占位。
+    final showActivityStrip = !ref.watch(uiPartHiddenProvider(ChatUiPart.activityStrip));
+    final showTerminalPill = !ref.watch(uiPartHiddenProvider(ChatUiPart.terminalPill));
+    final stripRisk = pillsBesideStrip ? _stripRisk(sessionId, autoApprove: chat?.autoApprove ?? false) : null;
     final composerPills = _composerPills(
       sessionId,
       autoApprove: chat?.autoApprove ?? false,
@@ -1831,23 +1836,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                         if (sessionId != null) ...[
                                           TodoDockSlot(sessionId: sessionId),
                                           GoalDockSlot(sessionId: sessionId),
-                                          ActivityStripSlot(
-                                            sessionId: sessionId,
-                                            onTap: () => _openRunningTrajectory(sessionId),
-                                            // The todo bar shows it, unless it is folded behind the strip.
-                                            todoProgress: ref.watch(dockFoldedProvider),
-                                          ),
+                                          if (showActivityStrip)
+                                            ActivityStripSlot(
+                                              sessionId: sessionId,
+                                              onTap: () => _openRunningTrajectory(sessionId),
+                                              // The todo bar shows it, unless it is folded behind the strip.
+                                              todoProgress: ref.watch(dockFoldedProvider),
+                                            ),
                                         ],
                                         // It gives the activity strip its place while a reply generates.
                                         if (!readOnly) ComposerStripSlot(sessionId: sessionId, visible: !running),
                                       ],
-                                      accessory: pillsBesideStrip
+                                      accessory: pillsBesideStrip && (showTerminalPill || stripRisk != null)
                                           ? Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const RootPill(compact: true),
-                                                if (_stripRisk(sessionId, autoApprove: chat?.autoApprove ?? false) case final risk?) ...[
-                                                  const SizedBox(width: 6),
+                                                if (showTerminalPill) const RootPill(compact: true),
+                                                if (stripRisk case final risk?) ...[
+                                                  if (showTerminalPill) const SizedBox(width: 6),
                                                   risk,
                                                 ],
                                               ],
@@ -1868,14 +1874,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                       // 终端胶囊与「完全权限」并排，都在输入框左侧。
                                       // 之前胶囊在 DockStack 卡片堆里、完全权限在输入框 leading 里，
                                       // 生成/静止切换时两者会上下错位。
-                                      leading: pillsInCapsules
+                                      leading: pillsInCapsules && (showTerminalPill || composerPills != null)
                                           ? Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const RootPill(),
-                                                if (composerPills != null) ...[
-                                                  const SizedBox(width: 6),
-                                                  composerPills,
+                                                if (showTerminalPill) const RootPill(),
+                                                if (composerPills case final pill?) ...[
+                                                  if (showTerminalPill) const SizedBox(width: 6),
+                                                  pill,
                                                 ],
                                               ],
                                             )
@@ -1917,14 +1923,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                         : l10n.mediaHintImage,
                                     onSend: _send,
                                     onSendOptions: chat?.controlReady ?? true ? _sendOptions : null,
-                                    voice: _voice,
+                                    voice: ref.watch(uiPartHiddenProvider(ChatUiPart.voiceButton)) ? null : _voice,
                                     onKeyEvent: _mentions.handleKey,
                                     onContentInserted: connected ? _pasteContent : null,
                                     onStop: _stop,
                                     hasAttachments: _drafts.isNotEmpty,
-                                    leading: AttachButton(onPressed: connected ? _attach : null),
+                                    leading: ref.watch(uiPartHiddenProvider(ChatUiPart.attachButton))
+                                        ? null
+                                        : AttachButton(onPressed: connected ? _attach : null),
                                     keyboardInset: MediaQuery.viewInsetsOf(context).bottom,
-                                    footer: _composerOpens(context) && !isChild
+                                    footer: _composerOpens(context) &&
+                                            !isChild &&
+                                            !ref.watch(uiPartHiddenProvider(ChatUiPart.modelPill))
                                         ? ComposerModelPill(
                                             selection: sessionId == null ? pendingModel : chat?.model,
                                             onSelected: _modelTarget(),
@@ -1946,7 +1956,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                               labels: frameLabels(generate, generateModel, _drafts.length),
                                             ),
                                     ),
-                                    accessory: sessionId == null || contextFraction == null
+                                    accessory:
+                                        sessionId == null ||
+                                            contextFraction == null ||
+                                            ref.watch(uiPartHiddenProvider(ChatUiPart.contextRing))
                                         ? null
                                         : ContextRing(
                                             fraction: contextFraction,
@@ -1975,15 +1988,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// than 工作区内修改 (unless [risk] is false: they are beside the activity
   /// strip), then the generation mode's capsule; nothing otherwise.
   Widget? _composerPills(String? sessionId, {required bool autoApprove, GenerateParams? generate, bool risk = true}) {
-    final capsule = generate == null
+    final capsule = generate == null || ref.watch(uiPartHiddenProvider(ChatUiPart.generateCapsule))
         ? null
         : GenerateCapsule(params: generate, onTap: () => _openGenerateSheet(generate), onExit: _exitGenerate);
     Widget? pill;
     if (!risk) {
       // Beside the activity strip ([_stripRisk]).
     } else if (sessionId != null && autoApprove) {
-      pill = AutoApprovePill(onDisable: () => ref.read(chatProvider(sessionId).notifier).setAutoApprove(false));
-    } else if (sessionId != null) {
+      if (!ref.watch(uiPartHiddenProvider(ChatUiPart.autoApprovePill))) {
+        pill = AutoApprovePill(onDisable: () => ref.read(chatProvider(sessionId).notifier).setAutoApprove(false));
+      }
+    } else if (sessionId != null && !ref.watch(uiPartHiddenProvider(ChatUiPart.permissionPill))) {
       final risky = ref.watch(sessionModesProvider(sessionId).select((m) => m.risky ? m.preset : null));
       if (risky != null) {
         // Beside the mode capsule it shrinks to its ⚠ (§4.2).
@@ -2009,11 +2024,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// 「自动允许中」/「完全权限」 beside the activity strip while a reply generates.
   Widget? _stripRisk(String sessionId, {required bool autoApprove}) {
     if (autoApprove) {
+      if (ref.watch(uiPartHiddenProvider(ChatUiPart.autoApprovePill))) return null;
       return StripRiskChip.autoApprove(
         context,
         onDisable: () => ref.read(chatProvider(sessionId).notifier).setAutoApprove(false),
       );
     }
+    if (ref.watch(uiPartHiddenProvider(ChatUiPart.permissionPill))) return null;
     final risky = ref.watch(sessionModesProvider(sessionId).select((m) => m.risky ? m.preset : null));
     if (risky == null) return null;
     return StripRiskChip.permission(

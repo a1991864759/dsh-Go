@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
 import '../../pets/pet_signals.dart' show petTakesWhaleProvider;
+import '../../state/chat_ui_parts.dart';
 import '../common/expand_reveal.dart';
 import '../common/fade_in.dart';
 import '../theme/app_icons.dart';
@@ -80,7 +81,7 @@ String greetingFor(DateTime now) {
 ///
 /// 左右与顶栏、输入条一样离屏幕 12,宽屏时与输入条同宽居中;第一次出现时
 /// 由上到下依次淡入。连不上引擎时建议收起,只留「重新连接」。
-class ChatEmptyState extends StatelessWidget {
+class ChatEmptyState extends ConsumerWidget {
   const ChatEmptyState({
     super.key,
     required this.connected,
@@ -140,7 +141,7 @@ class ChatEmptyState extends StatelessWidget {
   static const suggestionsGap = 32.0;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final dsh = DshColors.of(context);
@@ -195,12 +196,14 @@ class ChatEmptyState extends StatelessWidget {
               // room stays, so nothing moves when the pet comes and goes.
               enter(
                 Consumer(
-                  builder: (context, ref, child) => AnimatedOpacity(
-                    opacity: ref.watch(petTakesWhaleProvider) ? 0 : 1,
-                    duration: AppMotion.of(context, AppMotion.standard),
-                    curve: AppMotion.std,
-                    child: child,
-                  ),
+                  builder: (context, ref, child) => ref.watch(uiPartHiddenProvider(ChatUiPart.whaleTail))
+                      ? const SizedBox.shrink()
+                      : AnimatedOpacity(
+                          opacity: ref.watch(petTakesWhaleProvider) ? 0 : 1,
+                          duration: AppMotion.of(context, AppMotion.standard),
+                          curve: AppMotion.std,
+                          child: child,
+                        ),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Center(
@@ -244,7 +247,7 @@ class ChatEmptyState extends StatelessWidget {
                 const SizedBox(height: 8),
                 enter(Center(child: folderPicker!)),
               ],
-              if (suggestions.isNotEmpty)
+              if (suggestions.isNotEmpty && !ref.watch(uiPartHiddenProvider(ChatUiPart.emptySuggestions)))
                 ExpandReveal(
                   open: retry == null && idle == null,
                   child: Padding(

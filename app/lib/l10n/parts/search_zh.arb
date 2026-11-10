@@ -108,6 +108,7 @@
   },
   "searchKwPersonalization": "个性化,偏好,风格,习惯",
   "searchKwInterface": "原生,网页,网页模式,网页版,通用设置",
+  "searchKwCustomUi": "自定义,自定义界面,控件,开关,隐藏,显示,胶囊,输入框,顶栏",
   "searchKwPrivacy": "隐私,数据,日志,分享,统计",
   "searchKwAbout": "关于,版本,更新,许可,dsh-go",
   "searchKwPhoneConfirmEntry": "确认方式,手机操控,免确认",

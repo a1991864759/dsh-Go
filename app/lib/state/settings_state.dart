@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/l10n.dart';
 import '../performance/performance_state.dart';
+import 'chat_ui_parts.dart';
 import 'provider_keys.dart';
 import 'read_list_epoch.dart';
 
@@ -25,6 +26,7 @@ class AppSettings {
     this.foldCompletedTurns = true,
     this.visualReplies = true,
     this.customProviderIds = const {},
+    this.hiddenUiParts = const {},
     this.loaded = false,
   });
 
@@ -68,6 +70,9 @@ class AppSettings {
   /// phone ([ProviderKeyVault]). Known at launch, before the engine runs, so
   /// the first-run gate can tell "has a model to talk to" without it.
   final Set<String> customProviderIds;
+
+  /// 对话页上关掉（隐藏）的控件，见 `state/chat_ui_parts.dart`。
+  final Set<String> hiddenUiParts;
   final bool loaded;
 
   bool get hasApiKey => apiKey.trim().isNotEmpty;
@@ -88,6 +93,7 @@ class AppSettings {
     bool? foldCompletedTurns,
     bool? visualReplies,
     Set<String>? customProviderIds,
+    Set<String>? hiddenUiParts,
     bool? loaded,
   }) => AppSettings(
     apiKey: apiKey ?? this.apiKey,
@@ -102,6 +108,7 @@ class AppSettings {
     foldCompletedTurns: foldCompletedTurns ?? this.foldCompletedTurns,
     visualReplies: visualReplies ?? this.visualReplies,
     customProviderIds: customProviderIds ?? this.customProviderIds,
+    hiddenUiParts: hiddenUiParts ?? this.hiddenUiParts,
     loaded: loaded ?? this.loaded,
   );
 }
@@ -125,6 +132,7 @@ class SettingsController extends Notifier<AppSettings> {
   static const _chatTextScaleKey = 'chat_text_scale';
   static const _foldTurnsKey = 'fold_completed_turns';
   static const _visualRepliesKey = 'visual_replies';
+  static const _hiddenUiPartsKey = 'hidden_ui_parts';
   static const _secure = FlutterSecureStorage();
   late Future<void> _loaded;
 
@@ -172,8 +180,38 @@ class SettingsController extends Notifier<AppSettings> {
       foldCompletedTurns: prefs.getBool(_foldTurnsKey) ?? true,
       visualReplies: prefs.getBool(_visualRepliesKey) ?? true,
       customProviderIds: providerIds,
+      hiddenUiParts: _hiddenParts(prefs),
       loaded: true,
     );
+  }
+
+  /// 存过就用存的（哪怕空集 = 全部显示）；没存过是最新默认值。
+  Set<String> _hiddenParts(SharedPreferences prefs) {
+    final stored = prefs.getStringList(_hiddenUiPartsKey);
+    if (stored != null) return stored.toSet();
+    return defaultHiddenUiParts;
+  }
+
+  /// 一次换掉整组（「恢复默认」）。
+  Future<void> setHiddenUiParts(Set<String> parts) async {
+    state = state.copyWith(hiddenUiParts: {...parts});
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_hiddenUiPartsKey, parts.toList()..sort());
+  }
+
+  /// 开关对话页上的一个控件（`ChatUiPart.id`）。
+  Future<void> setUiPartHidden(String part, bool hidden) async {
+    // Before the first load the state still holds no set: start from the
+    // defaults, so toggling one switch doesn't switch the others back on.
+    final next = {...(state.loaded ? state.hiddenUiParts : defaultHiddenUiParts)};
+    if (hidden) {
+      next.add(part);
+    } else {
+      next.remove(part);
+    }
+    state = state.copyWith(hiddenUiParts: next);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_hiddenUiPartsKey, next.toList()..sort());
   }
 
   /// Keeps [key] for the local engine's custom provider [id] (see

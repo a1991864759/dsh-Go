@@ -10,6 +10,7 @@ import 'package:dsh_app/runtime/runtime_state.dart';
 import 'package:dsh_app/state/account_state.dart';
 import 'package:dsh_app/state/balance_state.dart';
 import 'package:dsh_app/state/connection_state.dart';
+import 'package:dsh_app/state/chat_ui_parts.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/ui/engine/engine_screen.dart';
 import 'package:dsh_app/ui/engine_settings/engine_settings_hub.dart';
@@ -26,6 +27,7 @@ import 'package:dsh_app/ui/settings/about_page.dart';
 import 'package:dsh_app/ui/settings/background_guide_page.dart';
 import 'package:dsh_app/ui/settings/notification_settings.dart';
 import 'package:dsh_app/ui/settings/interface_page.dart';
+import 'package:dsh_app/ui/settings/custom_ui_page.dart';
 import 'package:dsh_app/ui/settings/performance_page.dart';
 import 'package:dsh_app/ui/settings/personalization_page.dart';
 import 'package:dsh_app/ui/settings/privacy_page.dart';
@@ -59,6 +61,9 @@ final Map<SettingsPageId, List<String Function(L10n)>> _unlisted = {
     (l) => l.performanceFollowMode,
   ],
   SettingsPageId.pets: [(l) => l.botsPetShowNow, (l) => l.botsPetSwitchDisabled, (l) => l.botsPetHiddenToday],
+  // 自定义界面: one switch per chat-part name, plus the restore row; each is
+  // its own toggle, none is a place to look up.
+  SettingsPageId.customUi: [(l) => l.uiCustomRestore, for (final part in ChatUiPart.values) (l) => part.label],
   SettingsPageId.remote: [(l) => l.remoteWebConsole],
 };
 
@@ -200,6 +205,10 @@ void main() {
         ],
       ),
     );
+  });
+
+  testWidgets('自定义界面', (tester) async {
+    await _check(tester, SettingsPageId.customUi, () => _app(tester, const CustomUiPage(), _running()));
   });
 
   testWidgets('个性化', (tester) async {

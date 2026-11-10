@@ -20,6 +20,7 @@ import '../../state/artifacts.dart';
 import '../../state/attachments.dart' show DraftAttachment;
 import '../../state/chat_reveal.dart';
 import '../../state/chat_state.dart';
+import '../../state/chat_ui_parts.dart';
 import '../../state/connection_state.dart';
 import '../../state/hosts_state.dart' show HostKind, activeHostProvider;
 import '../../state/regenerate.dart';
@@ -958,11 +959,15 @@ class _ChatListState extends ConsumerState<ChatList> with SingleTickerProviderSt
   }
 
   Widget _footnote(TurnTrace trace) => Consumer(
-    builder: (context, ref, _) => TurnFootnote(
-      trace: trace,
-      notes: ref.watch(nativeTurnNoteProvider((widget.sessionId, trace.turn))),
-      onTap: () => showTrajectorySheet(context, sessionId: widget.sessionId, turn: trace.turn),
-    ),
+    builder: (context, ref, _) {
+      if (ref.watch(uiPartHiddenProvider(ChatUiPart.turnFooter))) return const SizedBox.shrink();
+      return TurnFootnote(
+        trace: trace,
+        notes: ref.watch(nativeTurnNoteProvider((widget.sessionId, trace.turn))),
+        showTokens: !ref.watch(uiPartHiddenProvider(ChatUiPart.tokenCount)),
+        onTap: () => showTrajectorySheet(context, sessionId: widget.sessionId, turn: trace.turn),
+      );
+    },
   );
 
   Future<void> _branch(AssistantChatItem item) async {
@@ -1142,22 +1147,28 @@ class _ChatListState extends ConsumerState<ChatList> with SingleTickerProviderSt
         horizontal: 8,
         child: Align(alignment: Alignment.centerLeft, child: _footnote(trace)),
       ),
-      ToolCallRow(:final item, :final card) => ToolRow(
-        item: item,
-        card: card,
-        onRespond: _respond,
-        onAllowAll: _allowAll,
-        autoAnswered: _autoAnswered,
-        onOpenSubagent: _openSubagent,
-      ),
-      ToolGroupRow(:final tools, :final live) => ToolGroup(
-        tools: tools,
-        live: live,
-        onRespond: _respond,
-        onAllowAll: _allowAll,
-        autoAnswered: _autoAnswered,
-        onOpenSubagent: _openSubagent,
-      ),
+      ToolCallRow(:final item, :final card) =>
+        ref.watch(uiPartHiddenProvider(ChatUiPart.toolRows))
+            ? const SizedBox.shrink()
+            : ToolRow(
+                item: item,
+                card: card,
+                onRespond: _respond,
+                onAllowAll: _allowAll,
+                autoAnswered: _autoAnswered,
+                onOpenSubagent: _openSubagent,
+              ),
+      ToolGroupRow(:final tools, :final live) =>
+        ref.watch(uiPartHiddenProvider(ChatUiPart.toolRows))
+            ? const SizedBox.shrink()
+            : ToolGroup(
+                tools: tools,
+                live: live,
+                onRespond: _respond,
+                onAllowAll: _allowAll,
+                autoAnswered: _autoAnswered,
+                onOpenSubagent: _openSubagent,
+              ),
       final TurnProcessRow row => TurnProcess(
         row: row,
         settle: _settling.remove(row.key),

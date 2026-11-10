@@ -8216,6 +8216,204 @@ abstract class L10n {
   /// **'{month}月{day}日'**
   String commonMonthDay(String month, int day);
 
+  /// No description provided for @uiCustomTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义界面'**
+  String get uiCustomTitle;
+
+  /// No description provided for @uiCustomIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'关掉开关，这个控件就从对话页上消失；打开就回来。改动立即生效。'**
+  String get uiCustomIntro;
+
+  /// No description provided for @uiCustomRestore.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get uiCustomRestore;
+
+  /// No description provided for @uiCustomRestored.
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复默认'**
+  String get uiCustomRestored;
+
+  /// No description provided for @uiGroupComposer.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入区'**
+  String get uiGroupComposer;
+
+  /// No description provided for @uiGroupHeader.
+  ///
+  /// In zh, this message translates to:
+  /// **'顶栏'**
+  String get uiGroupHeader;
+
+  /// No description provided for @uiGroupMessages.
+  ///
+  /// In zh, this message translates to:
+  /// **'消息区'**
+  String get uiGroupMessages;
+
+  /// No description provided for @uiGroupEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'新对话页'**
+  String get uiGroupEmpty;
+
+  /// No description provided for @uiPartActivityStrip.
+  ///
+  /// In zh, this message translates to:
+  /// **'活动条（生成中在做什么）'**
+  String get uiPartActivityStrip;
+
+  /// No description provided for @uiPartPermissionPill.
+  ///
+  /// In zh, this message translates to:
+  /// **'完全权限胶囊'**
+  String get uiPartPermissionPill;
+
+  /// No description provided for @uiPartAutoApprovePill.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动允许胶囊'**
+  String get uiPartAutoApprovePill;
+
+  /// No description provided for @uiPartTerminalPill.
+  ///
+  /// In zh, this message translates to:
+  /// **'终端档位胶囊'**
+  String get uiPartTerminalPill;
+
+  /// No description provided for @uiPartGenerateCapsule.
+  ///
+  /// In zh, this message translates to:
+  /// **'生成模式胶囊'**
+  String get uiPartGenerateCapsule;
+
+  /// No description provided for @uiPartQuickCapsules.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷胶囊行'**
+  String get uiPartQuickCapsules;
+
+  /// No description provided for @uiPartPluginCapsule.
+  ///
+  /// In zh, this message translates to:
+  /// **'插件入口胶囊'**
+  String get uiPartPluginCapsule;
+
+  /// No description provided for @uiPartTodoPill.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办条'**
+  String get uiPartTodoPill;
+
+  /// No description provided for @uiPartGoalPill.
+  ///
+  /// In zh, this message translates to:
+  /// **'目标条'**
+  String get uiPartGoalPill;
+
+  /// No description provided for @uiPartModelPill.
+  ///
+  /// In zh, this message translates to:
+  /// **'模型胶囊（输入框下）'**
+  String get uiPartModelPill;
+
+  /// No description provided for @uiPartContextRing.
+  ///
+  /// In zh, this message translates to:
+  /// **'上下文环'**
+  String get uiPartContextRing;
+
+  /// No description provided for @uiPartAttachButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'附件键 ＋'**
+  String get uiPartAttachButton;
+
+  /// No description provided for @uiPartVoiceButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音键'**
+  String get uiPartVoiceButton;
+
+  /// No description provided for @uiPartHeaderTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题胶囊'**
+  String get uiPartHeaderTitle;
+
+  /// No description provided for @uiPartHeaderClock.
+  ///
+  /// In zh, this message translates to:
+  /// **'定时任务钟'**
+  String get uiPartHeaderClock;
+
+  /// No description provided for @uiPartHeaderAgents.
+  ///
+  /// In zh, this message translates to:
+  /// **'子代理胶囊'**
+  String get uiPartHeaderAgents;
+
+  /// No description provided for @uiPartHeaderModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'顶栏模型胶囊'**
+  String get uiPartHeaderModel;
+
+  /// No description provided for @uiPartHeaderNewChat.
+  ///
+  /// In zh, this message translates to:
+  /// **'新对话键'**
+  String get uiPartHeaderNewChat;
+
+  /// No description provided for @uiPartReasoningDetails.
+  ///
+  /// In zh, this message translates to:
+  /// **'思考过程'**
+  String get uiPartReasoningDetails;
+
+  /// No description provided for @uiPartToolRows.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具调用'**
+  String get uiPartToolRows;
+
+  /// No description provided for @uiPartTurnFooter.
+  ///
+  /// In zh, this message translates to:
+  /// **'回合脚注'**
+  String get uiPartTurnFooter;
+
+  /// No description provided for @uiPartTokenCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'脚注里的 token 数'**
+  String get uiPartTokenCount;
+
+  /// No description provided for @uiPartWhaleTail.
+  ///
+  /// In zh, this message translates to:
+  /// **'鲸尾'**
+  String get uiPartWhaleTail;
+
+  /// No description provided for @uiPartEmptySuggestions.
+  ///
+  /// In zh, this message translates to:
+  /// **'建议卡'**
+  String get uiPartEmptySuggestions;
+
+  /// No description provided for @uiCustomFromUiJson.
+  ///
+  /// In zh, this message translates to:
+  /// **'由 ui.json 的 hide 控制'**
+  String get uiCustomFromUiJson;
+
   /// No description provided for @engineNewChatDefaultsLast.
   ///
   /// In zh, this message translates to:
@@ -25513,6 +25711,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'原生,网页,网页模式,网页版,通用设置'**
   String get searchKwInterface;
+
+  /// No description provided for @searchKwCustomUi.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义,自定义界面,控件,开关,隐藏,显示,胶囊,输入框,顶栏'**
+  String get searchKwCustomUi;
 
   /// No description provided for @searchKwPrivacy.
   ///

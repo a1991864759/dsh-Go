@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../../state/chat_ui_parts.dart';
 import '../../state/header_schedule_state.dart';
 import '../agents/header_agents.dart';
 import '../common/fluid_bits.dart';
@@ -131,7 +132,11 @@ class _ChatHeaderState extends ConsumerState<ChatHeader> {
     final titleFloor = _titleFloor(context, statusStyle);
     // The schedule clock widens the pill by this much over its plain right
     // padding, while the bar can afford it (see [_HeaderRow]).
-    final scheduled = ref.watch(headerSchedulesProvider.select((s) => s.shown));
+    // 设置 → 自定义界面：标题胶囊、钟、子代理胶囊、新对话键都能关。
+    final hideTitlePill = ref.watch(uiPartHiddenProvider(ChatUiPart.headerTitle));
+    final scheduled =
+        !ref.watch(uiPartHiddenProvider(ChatUiPart.headerClock)) &&
+        ref.watch(headerSchedulesProvider.select((s) => s.shown));
     final clockExtra = scheduled ? HeaderScheduleCap.extraFor(pillHeight) : 0.0;
     // Wide windows: next to the rail (it has its own ≡) the key goes, and ≡
     // says what it does there (fold or unfold the list).
@@ -185,7 +190,9 @@ class _ChatHeaderState extends ConsumerState<ChatHeader> {
                   Semantics(
                     button: widget.onTitleTap != null,
                     hint: widget.onTitleTap == null ? null : l10n.chatViewChatDetails,
-                    child: GlassSurface(
+                    child: hideTitlePill
+                        ? const SizedBox.shrink()
+                        : GlassSurface(
                       tier: GlassTier.chrome,
                       stadium: true,
                       grouped: true,
@@ -272,7 +279,8 @@ class _ChatHeaderState extends ConsumerState<ChatHeader> {
                     children: [
                       SmoothSize(
                         duration: AppMotion.of(context, AppMotion.quick),
-                        child: widget.onNewChat == null
+                        child: widget.onNewChat == null ||
+                                ref.watch(uiPartHiddenProvider(ChatUiPart.headerNewChat))
                             ? const SizedBox.shrink()
                             : Padding(
                                 padding: const EdgeInsets.only(left: HeaderTrailingSlot.gap),

@@ -4462,6 +4462,105 @@ class L10nZh extends L10n {
   }
 
   @override
+  String get uiCustomTitle => '自定义界面';
+
+  @override
+  String get uiCustomIntro => '关掉开关，这个控件就从对话页上消失；打开就回来。改动立即生效。';
+
+  @override
+  String get uiCustomRestore => '恢复默认';
+
+  @override
+  String get uiCustomRestored => '已恢复默认';
+
+  @override
+  String get uiGroupComposer => '输入区';
+
+  @override
+  String get uiGroupHeader => '顶栏';
+
+  @override
+  String get uiGroupMessages => '消息区';
+
+  @override
+  String get uiGroupEmpty => '新对话页';
+
+  @override
+  String get uiPartActivityStrip => '活动条（生成中在做什么）';
+
+  @override
+  String get uiPartPermissionPill => '完全权限胶囊';
+
+  @override
+  String get uiPartAutoApprovePill => '自动允许胶囊';
+
+  @override
+  String get uiPartTerminalPill => '终端档位胶囊';
+
+  @override
+  String get uiPartGenerateCapsule => '生成模式胶囊';
+
+  @override
+  String get uiPartQuickCapsules => '快捷胶囊行';
+
+  @override
+  String get uiPartPluginCapsule => '插件入口胶囊';
+
+  @override
+  String get uiPartTodoPill => '待办条';
+
+  @override
+  String get uiPartGoalPill => '目标条';
+
+  @override
+  String get uiPartModelPill => '模型胶囊（输入框下）';
+
+  @override
+  String get uiPartContextRing => '上下文环';
+
+  @override
+  String get uiPartAttachButton => '附件键 ＋';
+
+  @override
+  String get uiPartVoiceButton => '语音键';
+
+  @override
+  String get uiPartHeaderTitle => '标题胶囊';
+
+  @override
+  String get uiPartHeaderClock => '定时任务钟';
+
+  @override
+  String get uiPartHeaderAgents => '子代理胶囊';
+
+  @override
+  String get uiPartHeaderModel => '顶栏模型胶囊';
+
+  @override
+  String get uiPartHeaderNewChat => '新对话键';
+
+  @override
+  String get uiPartReasoningDetails => '思考过程';
+
+  @override
+  String get uiPartToolRows => '工具调用';
+
+  @override
+  String get uiPartTurnFooter => '回合脚注';
+
+  @override
+  String get uiPartTokenCount => '脚注里的 token 数';
+
+  @override
+  String get uiPartWhaleTail => '鲸尾';
+
+  @override
+  String get uiPartEmptySuggestions => '建议卡';
+
+  @override
+  String get uiCustomFromUiJson => '由 ui.json 的 hide 控制';
+
+  @override
   String get engineNewChatDefaultsLast => '新对话默认（上次选择）';
 
   @override
@@ -13928,6 +14027,9 @@ class L10nZh extends L10n {
 
   @override
   String get searchKwInterface => '原生,网页,网页模式,网页版,通用设置';
+
+  @override
+  String get searchKwCustomUi => '自定义,自定义界面,控件,开关,隐藏,显示,胶囊,输入框,顶栏';
 
   @override
   String get searchKwPrivacy => '隐私,数据,日志,分享,统计';

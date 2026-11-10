@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../../state/chat_ui_parts.dart';
 import '../../state/agents_state.dart';
 import '../../state/sessions_state.dart';
 import '../common/fluid_bits.dart';
@@ -78,12 +79,17 @@ class HeaderTrailingSlot extends ConsumerWidget {
     final current = ref.watch(_currentAgentsProvider);
     final agents = current?.$2;
     final key = agents == null ? null : HeaderAgentsKey(sessionId: current!.$1, agents: agents);
-    final showsKey = agents != null && (agents.hasTeam || agents.children > 0);
+    // 设置 → 自定义界面：子代理胶囊、模型胶囊各自可关。
+    final showsKey = agents != null && (agents.hasTeam || agents.children > 0) && !ref.watch(uiPartHiddenProvider(ChatUiPart.headerAgents));
+    final showsModel = !ref.watch(uiPartHiddenProvider(ChatUiPart.headerModel));
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (showsKey) ...[const SizedBox(width: gap), key!],
-        if (trailing case final trailing? when !(agents?.isChild ?? false)) ...[const SizedBox(width: gap), trailing],
+        if (trailing case final trailing? when showsModel && !(agents?.isChild ?? false)) ...[
+          const SizedBox(width: gap),
+          trailing,
+        ],
       ],
     );
   }

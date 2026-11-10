@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../../state/chat_ui_parts.dart';
 import '../../state/connection_state.dart';
 import '../../state/header_schedule_state.dart';
 import '../../state/schedule_editor_state.dart';
@@ -114,7 +115,7 @@ class _HeaderScheduleCapState extends ConsumerState<HeaderScheduleCap> with _Ret
   Widget build(BuildContext context) {
     final schedules = ref.watch(headerSchedulesProvider);
     final Widget child;
-    if (!schedules.shown) {
+    if (!schedules.shown || ref.watch(uiPartHiddenProvider(ChatUiPart.headerClock))) {
       stopRetick();
       child = const SizedBox(key: ValueKey('plain'), width: HeaderScheduleCap.padding);
     } else {

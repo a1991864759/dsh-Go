@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../plugins/native/native_model.dart';
 import '../../../plugins/native/native_state.dart';
+import '../../../state/chat_ui_parts.dart';
 import '../../../ui_config/ui_config_model.dart';
 import '../../../ui_config/ui_config_state.dart';
 import '../../common/edge_fade.dart';
@@ -267,9 +268,13 @@ class _ComposerCapsuleBarState extends ConsumerState<ComposerCapsuleBar> {
 
   @override
   Widget build(BuildContext context) {
-    final quick = ref.watch(uiOverridesProvider.select((o) => o.config.quickActions)) ?? const <UiQuickAction>[];
+    // 设置 → 自定义界面：快捷胶囊行、插件入口都能单独关掉。
+    final showQuick = !ref.watch(uiPartHiddenProvider(ChatUiPart.quickCapsules));
+    final quick = !showQuick
+        ? const <UiQuickAction>[]
+        : ref.watch(uiOverridesProvider.select((o) => o.config.quickActions)) ?? const <UiQuickAction>[];
     final plugins = ref.watch(nativeComposerActionsProvider);
-    final hidePluginCapsule = ref.watch(uiHiddenProvider(UiHideItem.pluginCapsule));
+    final hidePluginCapsule = ref.watch(uiPartHiddenProvider(ChatUiPart.pluginCapsule));
     final session = widget.sessionId;
     final items = [
       ...composerCapsules(context, ref, sessionId: session, quick: quick, plugins: plugins),

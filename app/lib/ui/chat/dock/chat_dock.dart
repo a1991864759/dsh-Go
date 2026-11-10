@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../state/chat_state.dart';
+import '../../../state/chat_ui_parts.dart';
 import '../../../state/goal_dock_state.dart';
 import 'dock_pill.dart';
 import 'root_pill.dart';
@@ -49,9 +50,10 @@ class TodoDockSlot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final todos = ref.watch(chatProvider(sessionId).select((s) => TodoDockSummary.of(s.todos, running: s.running)));
+    final hidden = ref.watch(uiPartHiddenProvider(ChatUiPart.todoPill));
     return DockSlot(
       key: const ValueKey('todo'),
-      child: todos == null ? null : TodoBar(key: ValueKey(sessionId), summary: todos),
+      child: todos == null || hidden ? null : TodoBar(key: ValueKey(sessionId), summary: todos),
     );
   }
 }
@@ -65,9 +67,10 @@ class GoalDockSlot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goal = ref.watch(goalDockProvider(sessionId));
+    final hidden = ref.watch(uiPartHiddenProvider(ChatUiPart.goalPill));
     return DockSlot(
       key: const ValueKey('goal'),
-      child: goal == null ? null : GoalBar(goal: goal, onTap: () => runGoalActions(context, ref, sessionId)),
+      child: goal == null || hidden ? null : GoalBar(goal: goal, onTap: () => runGoalActions(context, ref, sessionId)),
     );
   }
 }

@@ -22,6 +22,7 @@ import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 import '../web/local_web_screen.dart';
 import 'quick_panel_items_sheet.dart';
+import 'index/settings_pages.dart';
 import 'settings_widgets.dart';
 
 SchemaFieldSpec _field(String ns, String key) => SchemaFieldSpec(ns, [key], copy: copyOf(ns, [key]));
@@ -51,6 +52,15 @@ class InterfacePage extends ConsumerWidget {
     return AppPage.list(
       title: l10n.hubSettingsInterface,
       children: [
+        // 自定义界面: 对话页上每个控件一个开关，它自己的页面。
+        SettingsSection(
+          children: [
+            SettingsTile(
+              spot: SettingsIndex.entry(SettingsPageId.customUi),
+              onTap: () => openSpot(context, SettingsIndex.entry(SettingsPageId.customUi)),
+            ),
+          ],
+        ),
         SettingsSection(
           title: l10n.hubInterfaceHome,
           spot: Spots.uiMode,

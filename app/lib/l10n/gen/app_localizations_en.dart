@@ -4752,6 +4752,106 @@ class L10nEn extends L10n {
   }
 
   @override
+  String get uiCustomTitle => 'Custom interface';
+
+  @override
+  String get uiCustomIntro =>
+      'Turn a switch off and that control leaves the chat screen; turn it back on and it returns. Changes apply at once.';
+
+  @override
+  String get uiCustomRestore => 'Restore defaults';
+
+  @override
+  String get uiCustomRestored => 'Defaults restored';
+
+  @override
+  String get uiGroupComposer => 'Composer';
+
+  @override
+  String get uiGroupHeader => 'Header';
+
+  @override
+  String get uiGroupMessages => 'Messages';
+
+  @override
+  String get uiGroupEmpty => 'New chat';
+
+  @override
+  String get uiPartActivityStrip => 'Activity strip (what\'s running)';
+
+  @override
+  String get uiPartPermissionPill => 'Full-access pill';
+
+  @override
+  String get uiPartAutoApprovePill => 'Auto-approve pill';
+
+  @override
+  String get uiPartTerminalPill => 'Terminal level pill';
+
+  @override
+  String get uiPartGenerateCapsule => 'Generate-mode capsule';
+
+  @override
+  String get uiPartQuickCapsules => 'Quick capsules';
+
+  @override
+  String get uiPartPluginCapsule => 'Plugins entry capsule';
+
+  @override
+  String get uiPartTodoPill => 'To-do bar';
+
+  @override
+  String get uiPartGoalPill => 'Goal bar';
+
+  @override
+  String get uiPartModelPill => 'Model pill (under the field)';
+
+  @override
+  String get uiPartContextRing => 'Context ring';
+
+  @override
+  String get uiPartAttachButton => 'Attach ＋';
+
+  @override
+  String get uiPartVoiceButton => 'Voice key';
+
+  @override
+  String get uiPartHeaderTitle => 'Title pill';
+
+  @override
+  String get uiPartHeaderClock => 'Schedule clock';
+
+  @override
+  String get uiPartHeaderAgents => 'Agents capsule';
+
+  @override
+  String get uiPartHeaderModel => 'Header model chip';
+
+  @override
+  String get uiPartHeaderNewChat => 'New chat key';
+
+  @override
+  String get uiPartReasoningDetails => 'Thinking';
+
+  @override
+  String get uiPartToolRows => 'Tool calls';
+
+  @override
+  String get uiPartTurnFooter => 'Turn footnote';
+
+  @override
+  String get uiPartTokenCount => 'Token count in the footnote';
+
+  @override
+  String get uiPartWhaleTail => 'Whale tail';
+
+  @override
+  String get uiPartEmptySuggestions => 'Suggestion cards';
+
+  @override
+  String get uiCustomFromUiJson => 'Controlled by ui.json hide';
+
+  @override
   String get engineNewChatDefaultsLast => 'New chat defaults (last choice)';
 
   @override
@@ -14642,6 +14742,9 @@ class L10nEn extends L10n {
 
   @override
   String get searchKwInterface => 'native,web,web mode,web app,general';
+
+  @override
+  String get searchKwCustomUi => 'custom,interface,controls,switches,hide,show,capsule,composer';
 
   @override
   String get searchKwPrivacy => 'privacy,data,logs,sharing,statistics';
