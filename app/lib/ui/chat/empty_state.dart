@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
 import '../../pets/pet_signals.dart' show petTakesWhaleProvider;
+import '../../state/chat_ui_parts.dart';
 import '../common/expand_reveal.dart';
 import '../common/fade_in.dart';
 import '../theme/app_icons.dart';
@@ -138,7 +139,7 @@ String greetingFor(DateTime now) {
 ///
 /// 左右与顶栏、输入条一样离屏幕 12,宽屏时与输入条同宽居中;第一次出现时
 /// 由上到下依次淡入。连不上引擎时建议、选项和小技巧都收起,只留「重新连接」。
-class ChatEmptyState extends StatelessWidget {
+class ChatEmptyState extends ConsumerWidget {
   const ChatEmptyState({
     super.key,
     required this.connected,
@@ -213,7 +214,7 @@ class ChatEmptyState extends StatelessWidget {
   static const tipGap = 6.0;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final dsh = DshColors.of(context);
@@ -327,7 +328,8 @@ class ChatEmptyState extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (suggestions.isNotEmpty)
+                        if (suggestions.isNotEmpty &&
+                            !chatUiHidden(ref, ChatUiPart.emptySuggestions))
                           SuggestionCards(
                             suggestions: suggestions,
                             enabled: connected,

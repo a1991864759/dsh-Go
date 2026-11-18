@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../speech/read_aloud.dart';
+import '../../../state/chat_ui_parts.dart';
 import '../../speech/speech_ui.dart';
 import '../../common/expand_reveal.dart';
 import '../../common/fluid_bits.dart';
@@ -46,7 +47,7 @@ const _firstTextIn = Duration(milliseconds: 200);
 /// ⇪ 和菜单里的「分享」打开同一个分享面板。长按或 ⋯:同一个消息菜单(复制 /
 /// 选择文字 / 引用 / 分享 / 重新回答 / 从这里分叉)。正文因此不再直接长按选字,选字走菜单里的
 /// "选择文字",选中一段还能「引用」。
-class AssistantMessage extends StatefulWidget {
+class AssistantMessage extends ConsumerStatefulWidget {
   const AssistantMessage({
     super.key,
     required this.item,
@@ -83,10 +84,10 @@ class AssistantMessage extends StatefulWidget {
   final Widget? footnote;
 
   @override
-  State<AssistantMessage> createState() => _AssistantMessageState();
+  ConsumerState<AssistantMessage> createState() => _AssistantMessageState();
 }
 
-class _AssistantMessageState extends State<AssistantMessage> {
+class _AssistantMessageState extends ConsumerState<AssistantMessage> {
   Widget? _body;
   String? _bodyText;
   bool? _bodyStreaming;
@@ -190,7 +191,7 @@ class _AssistantMessageState extends State<AssistantMessage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (reasoning.isNotEmpty) ...[
+          if (reasoning.isNotEmpty && !chatUiHidden(ref, ChatUiPart.reasoningDetails)) ...[
             ThinkingPill(
               reasoning: reasoning,
               active: streaming && text.isEmpty,

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/l10n.dart';
 import '../performance/performance_state.dart';
 import '../secrets/secure_storage.dart';
+import 'chat_ui_parts.dart';
 import 'provider_keys.dart';
 import 'read_list_epoch.dart';
 
@@ -27,6 +28,7 @@ class AppSettings {
     this.foldCompletedTurns = true,
     this.visualReplies = true,
     this.customProviderIds = const {},
+    this.hiddenUiParts = const {},
     this.loaded = false,
   });
 
@@ -76,6 +78,11 @@ class AppSettings {
   /// phone ([ProviderKeyVault]). Known at launch, before the engine runs, so
   /// the first-run gate can tell "has a model to talk to" without it.
   final Set<String> customProviderIds;
+
+  /// Chat-screen controls the user hid (设置 → 界面 → 自定义界面). Ids are
+  /// [ChatUiPart] names; empty means everything visible. Until the user saves
+  /// a choice the loader fills in [defaultHiddenUiParts].
+  final Set<String> hiddenUiParts;
   final bool loaded;
 
   bool get hasApiKey => apiKey.trim().isNotEmpty;
@@ -98,6 +105,7 @@ class AppSettings {
     bool? foldCompletedTurns,
     bool? visualReplies,
     Set<String>? customProviderIds,
+    Set<String>? hiddenUiParts,
     bool? loaded,
   }) => AppSettings(
     apiKey: apiKey ?? this.apiKey,
@@ -114,6 +122,7 @@ class AppSettings {
     foldCompletedTurns: foldCompletedTurns ?? this.foldCompletedTurns,
     visualReplies: visualReplies ?? this.visualReplies,
     customProviderIds: customProviderIds ?? this.customProviderIds,
+    hiddenUiParts: hiddenUiParts ?? this.hiddenUiParts,
     loaded: loaded ?? this.loaded,
   );
 }
@@ -139,6 +148,7 @@ class SettingsController extends Notifier<AppSettings> {
   static const _chatTextScaleKey = 'chat_text_scale';
   static const _foldTurnsKey = 'fold_completed_turns';
   static const _visualRepliesKey = 'visual_replies';
+  static const _hiddenUiPartsKey = 'hidden_ui_parts';
   static const _secure = AppSecureStorage();
   late Future<void> _loaded;
 
@@ -188,6 +198,7 @@ class SettingsController extends Notifier<AppSettings> {
       foldCompletedTurns: prefs.getBool(_foldTurnsKey) ?? true,
       visualReplies: prefs.getBool(_visualRepliesKey) ?? true,
       customProviderIds: providerIds,
+      hiddenUiParts: prefs.getStringList(_hiddenUiPartsKey)?.toSet() ?? defaultHiddenUiParts,
       loaded: true,
     );
   }
@@ -313,6 +324,32 @@ class SettingsController extends Notifier<AppSettings> {
     state = state.copyWith(chatSuggestions: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_chatSuggestionsKey, value);
+  }
+
+  /// Hides or shows one chat-screen control. The first write stores the whole
+  /// set (defaults included), so a later default change cannot re-hide a
+  /// control the user already turned back on.
+  Future<void> setUiPartHidden(String part, bool hidden) async {
+    await _loaded;
+    if (!ref.mounted) return;
+    final next = {...(state.loaded ? state.hiddenUiParts : defaultHiddenUiParts)};
+    if (hidden) {
+      next.add(part);
+    } else {
+      next.remove(part);
+    }
+    state = state.copyWith(hiddenUiParts: next);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_hiddenUiPartsKey, next.toList()..sort());
+  }
+
+  /// Back to the defaults (activity strip and permission capsule hidden).
+  Future<void> resetHiddenUiParts() async {
+    await _loaded;
+    if (!ref.mounted) return;
+    state = state.copyWith(hiddenUiParts: defaultHiddenUiParts);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_hiddenUiPartsKey);
   }
 
   Future<void> setAutoStartLocal(bool value) async {

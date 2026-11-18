@@ -20,6 +20,7 @@ import '../common/status_dot.dart';
 import '../shell/adaptive/adaptive_scaffold.dart' show AdaptiveChrome;
 import '../shell/adaptive/detail_panel_keys.dart';
 import '../theme/app_icons.dart';
+import '../../state/chat_ui_parts.dart';
 import '../theme/theme.dart';
 import 'header_schedule.dart';
 import 'model_sheet.dart' show ModelChip;
@@ -133,7 +134,9 @@ class _ChatHeaderState extends ConsumerState<ChatHeader> {
     final titleFloor = _titleFloor(context, statusStyle);
     // The schedule clock widens the pill by this much over its plain right
     // padding, while the bar can afford it (see [_HeaderRow]).
-    final scheduled = ref.watch(headerSchedulesProvider.select((s) => s.shown));
+    final scheduled =
+        ref.watch(headerSchedulesProvider.select((s) => s.shown)) &&
+        !chatUiHidden(ref, ChatUiPart.headerClock);
     final clockExtra = scheduled ? HeaderScheduleCap.extraFor(pillHeight) : 0.0;
     // Wide windows: next to the rail (it has its own ≡) the key goes, and ≡
     // says what it does there (fold or unfold the list).
@@ -184,6 +187,7 @@ class _ChatHeaderState extends ConsumerState<ChatHeader> {
                             ),
                           ),
                   ),
+                  if (!chatUiHidden(ref, ChatUiPart.headerTitle))
                   Semantics(
                     button: widget.onTitleTap != null,
                     hint: widget.onTitleTap == null ? null : l10n.chatViewChatDetails,
@@ -262,10 +266,12 @@ class _ChatHeaderState extends ConsumerState<ChatHeader> {
                   // conversation has no model chip). Flexible: the chip
                   // takes the width this row gives it.
                   HeaderTrailingSlot(
-                    trailing: switch (widget.trailing) {
-                      final trailing? => Flexible(child: _ChipSlot(child: trailing)),
-                      null => null,
-                    },
+                    trailing: chatUiHidden(ref, ChatUiPart.headerModel)
+                        ? null
+                        : switch (widget.trailing) {
+                            final trailing? => Flexible(child: _ChipSlot(child: trailing)),
+                            null => null,
+                          },
                   ),
                   // Mirrors the menu key; gone on the new-chat screen. On a
                   // wide window the key that unfolds 对话详情 follows it.
@@ -274,7 +280,7 @@ class _ChatHeaderState extends ConsumerState<ChatHeader> {
                     children: [
                       SmoothSize(
                         duration: AppMotion.of(context, AppMotion.quick),
-                        child: widget.onNewChat == null
+                        child: widget.onNewChat == null || chatUiHidden(ref, ChatUiPart.headerNewChat)
                             ? const SizedBox.shrink()
                             : Padding(
                                 padding: const EdgeInsets.only(left: HeaderTrailingSlot.gap),

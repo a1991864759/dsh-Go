@@ -17,6 +17,7 @@ import '../../state/sessions_state.dart';
 import '../common/fluid_bits.dart';
 import '../common/status_dot.dart';
 import '../theme/app_icons.dart';
+import '../../state/chat_ui_parts.dart';
 import '../theme/theme.dart';
 import 'lineage_sheet.dart';
 import 'team_page.dart';
@@ -78,7 +79,9 @@ class HeaderTrailingSlot extends ConsumerWidget {
     final current = ref.watch(_currentAgentsProvider);
     final agents = current?.$2;
     final key = agents == null ? null : HeaderAgentsKey(sessionId: current!.$1, agents: agents);
-    final showsKey = agents != null && (agents.hasTeam || agents.children > 0);
+    final showsKey = agents != null &&
+        (agents.hasTeam || agents.children > 0) &&
+        !ref.watch(chatUiHiddenProvider(ChatUiPart.headerAgents));
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

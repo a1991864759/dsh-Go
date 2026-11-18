@@ -25,6 +25,7 @@ import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 import '../web/local_web_screen.dart';
 import 'quick_panel_items_sheet.dart';
+import 'custom_ui_page.dart';
 import 'settings_widgets.dart';
 
 SchemaFieldSpec _field(String ns, String key) => SchemaFieldSpec(ns, [key], copy: copyOf(ns, [key]));
@@ -55,6 +56,18 @@ class InterfacePage extends ConsumerWidget {
     return AppPage.list(
       title: l10n.hubSettingsInterface,
       children: [
+        SettingsSection(
+          children: [
+            SettingsTile(
+              icon: AppIcons.theme,
+              title: '自定义界面',
+              subtitle: '对话界面上的控件，开就是显示、关就是隐藏',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const CustomUiPage()),
+              ),
+            ),
+          ],
+        ),
         SettingsSection(
           title: l10n.modeSheetTitle,
           children: [

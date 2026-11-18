@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../state/chat_state.dart';
+import '../../../state/chat_ui_parts.dart';
 import '../../../state/run_pulse.dart';
 import '../../pets/pet_perch.dart';
 import '../../theme/theme.dart';
@@ -246,9 +247,10 @@ class _ActivityStripState extends State<ActivityStrip> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               // 自己一层:鲸尾每帧在动,不连累玻璃里的其余内容重绘。
-                              RepaintBoundary(
-                                child: WhaleTail(level: widget.speedLevel, color: whale, height: 20),
-                              ),
+                              if (!chatUiHidden(ref, ChatUiPart.whaleTail))
+                                RepaintBoundary(
+                                  child: WhaleTail(level: widget.speedLevel, color: whale, height: 20),
+                                ),
                               const SizedBox(width: 6),
                             ],
                           ),

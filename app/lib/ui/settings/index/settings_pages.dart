@@ -42,6 +42,7 @@ import '../settings_screen.dart';
 import '../system_access_page.dart';
 import '../../companion/companion_voice_page.dart';
 import '../voice_settings_page.dart';
+import '../custom_ui_page.dart';
 import 'spot_anchor.dart';
 import 'spots.dart';
 
@@ -87,6 +88,7 @@ Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.agentPresets => const AgentPresetsPage(),
   SettingsPageId.personalization => const PersonalizationPage(),
   SettingsPageId.interface => const InterfacePage(),
+  SettingsPageId.customUi => const CustomUiPage(),
   SettingsPageId.privacy => const PrivacyPage(),
   SettingsPageId.about => const AboutPage(),
 };

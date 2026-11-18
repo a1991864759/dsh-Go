@@ -81,6 +81,7 @@ enum SettingsPageId {
   appearance,
   pets,
   interface,
+  customUi,
   notifications,
   voice,
   voiceReading,
@@ -528,6 +529,12 @@ final _pages = <SettingsPageMeta>[
     group: _general,
     keywords: (l) => l.searchKwInterface,
     links: const ['interface'],
+  ),
+  SettingsPageMeta(
+    SettingsPageId.customUi,
+    title: (l) => '自定义界面',
+    parent: SettingsPageId.interface,
+    links: const ['custom-ui'],
   ),
   SettingsPageMeta(
     SettingsPageId.notifications,

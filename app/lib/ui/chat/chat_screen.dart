@@ -33,6 +33,7 @@ import '../../state/attachments.dart';
 import '../../state/balance_state.dart';
 import '../../state/chat_error_text.dart';
 import '../../state/chat_state.dart';
+import '../../state/chat_ui_parts.dart';
 import '../../state/commands_state.dart';
 import '../../state/compose_inbox.dart';
 import '../../state/composer_insert.dart';
@@ -2145,8 +2146,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                     child: DockStack(
                                       cards: [
                                         if (sessionId != null) ...[
-                                          TodoDockSlot(sessionId: sessionId),
-                                          GoalDockSlot(sessionId: sessionId),
+                                          if (!chatUiHidden(ref, ChatUiPart.todoPill))
+                                            TodoDockSlot(sessionId: sessionId),
+                                          if (!chatUiHidden(ref, ChatUiPart.goalPill))
+                                            GoalDockSlot(sessionId: sessionId),
+                                          if (!chatUiHidden(ref, ChatUiPart.activityStrip))
                                           ActivityStripSlot(
                                             sessionId: sessionId,
                                             onTap: () => _openRunningTrajectory(sessionId),
@@ -2246,14 +2250,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                         : l10n.mediaHintImage,
                                     onSend: _send,
                                     onSendOptions: chat?.controlReady ?? true ? _sendOptions : null,
-                                    voice: _voice,
+                                    voice: chatUiHidden(ref, ChatUiPart.voiceButton) ? null : _voice,
                                     onKeyEvent: _composerKey,
                                     onContentInserted: connected ? _pasteContent : null,
                                     onStop: _stop,
                                     hasAttachments: _drafts.isNotEmpty,
-                                    leading: AttachButton(onPressed: connected ? _attach : null),
+                                    leading: chatUiHidden(ref, ChatUiPart.attachButton)
+                                        ? null
+                                        : AttachButton(onPressed: connected ? _attach : null),
                                     keyboardInset: MediaQuery.viewInsetsOf(context).bottom,
-                                    footer: _composerOpens(context) && !isChild
+                                    footer: _composerOpens(context) &&
+                                            !isChild &&
+                                            !chatUiHidden(ref, ChatUiPart.modelPill)
                                         ? ComposerModelPill(
                                             selection: sessionId == null ? pendingModel : chat?.model,
                                             onSelected: _modelTarget(),
@@ -2275,7 +2283,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                                               labels: frameLabels(generate, generateModel, _drafts.length),
                                             ),
                                     ),
-                                    accessory: sessionId == null || contextFraction == null
+                                    accessory: sessionId == null ||
+                                            contextFraction == null ||
+                                            chatUiHidden(ref, ChatUiPart.contextRing)
                                         ? null
                                         : ContextRing(
                                             fraction: contextFraction,
@@ -2304,15 +2314,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// than 工作区内修改 (unless [risk] is false: they are beside the activity
   /// strip), then the generation mode's capsule; nothing otherwise.
   Widget? _composerPills(String? sessionId, {required bool autoApprove, GenerateParams? generate, bool risk = true}) {
-    final capsule = generate == null
+    final capsule = generate == null || chatUiHidden(ref, ChatUiPart.generateCapsule)
         ? null
         : GenerateCapsule(params: generate, onTap: () => _openGenerateSheet(generate), onExit: _exitGenerate);
     Widget? pill;
     if (!risk) {
       // Beside the activity strip ([_stripRisk]).
     } else if (sessionId != null && autoApprove) {
+      if (chatUiHidden(ref, ChatUiPart.autoApprovePill)) return capsule;
       pill = AutoApprovePill(onDisable: () => ref.read(chatProvider(sessionId).notifier).setAutoApprove(false));
-    } else if (sessionId != null) {
+    } else if (sessionId != null && !chatUiHidden(ref, ChatUiPart.permissionPill)) {
       final risky = ref.watch(sessionModesProvider(sessionId).select((m) => m.risky ? m.preset : null));
       if (risky != null) {
         // Beside the mode capsule it shrinks to its ⚠ (§4.2).
@@ -2338,11 +2349,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// 「自动允许中」/「完全权限」 beside the activity strip while a reply generates.
   Widget? _stripRisk(String sessionId, {required bool autoApprove}) {
     if (autoApprove) {
+      if (chatUiHidden(ref, ChatUiPart.autoApprovePill)) return null;
       return StripRiskChip.autoApprove(
         context,
         onDisable: () => ref.read(chatProvider(sessionId).notifier).setAutoApprove(false),
       );
     }
+    if (chatUiHidden(ref, ChatUiPart.permissionPill)) return null;
     final risky = ref.watch(sessionModesProvider(sessionId).select((m) => m.risky ? m.preset : null));
     if (risky == null) return null;
     return StripRiskChip.permission(

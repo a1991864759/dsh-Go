@@ -27,6 +27,7 @@ import '../../state/connection_state.dart';
 import '../../state/hosts_state.dart' show HostKind, activeHostProvider;
 import '../../state/regenerate.dart';
 import '../../state/sessions_state.dart';
+import '../../state/chat_ui_parts.dart';
 import '../../state/settings_state.dart';
 import '../common/app_dialog.dart';
 import '../common/bleed.dart';
@@ -1280,6 +1281,7 @@ class _ChatListState extends ConsumerState<ChatList> with SingleTickerProviderSt
     builder: (context, ref, _) => TurnFootnote(
       trace: trace,
       notes: ref.watch(nativeTurnNoteProvider((widget.sessionId, trace.turn))),
+      showTokens: !ref.watch(chatUiHiddenProvider(ChatUiPart.tokenCount)),
       onTap: () => showTrajectorySheet(context, sessionId: widget.sessionId, turn: trace.turn),
     ),
   );
@@ -1445,6 +1447,12 @@ class _ChatListState extends ConsumerState<ChatList> with SingleTickerProviderSt
   }
 
   Widget _rowWidget(ChatRow row) {
+    if (row is ToolCallRow || row is ToolGroupRow) {
+      if (chatUiHidden(ref, ChatUiPart.toolRows)) return const SizedBox.shrink();
+    }
+    if (row is TurnFootnoteRow && chatUiHidden(ref, ChatUiPart.turnFooter)) {
+      return const SizedBox.shrink();
+    }
     return switch (row) {
       UserRow(:final item) when dshUiReplyChip(item.text) != null => DshUiReplyChip(label: dshUiReplyChip(item.text)!),
       UserRow(:final item) => UserBubble(
