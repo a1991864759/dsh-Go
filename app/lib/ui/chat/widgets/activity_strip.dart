@@ -147,7 +147,7 @@ class _ActivityStripSlotState extends ConsumerState<ActivityStripSlot> with Sing
 /// Outside a pet stage nothing ever stands on the strip.
 final _noPet = ValueNotifier<PerchKind?>(null);
 
-class ActivityStrip extends StatefulWidget {
+class ActivityStrip extends ConsumerStatefulWidget {
   const ActivityStrip({
     super.key,
     required this.activity,
@@ -181,10 +181,10 @@ class ActivityStrip extends StatefulWidget {
   static const statsFor = Duration(seconds: 4);
 
   @override
-  State<ActivityStrip> createState() => _ActivityStripState();
+  ConsumerState<ActivityStrip> createState() => _ActivityStripState();
 }
 
-class _ActivityStripState extends State<ActivityStrip> {
+class _ActivityStripState extends ConsumerState<ActivityStrip> {
   Timer? _statsTimer;
 
   @override
