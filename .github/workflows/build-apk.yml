@@ -31,6 +31,11 @@ jobs:
       - name: Accept Android licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
 
+      - name: Install NDK (tawcroot needs 28.2.13676358)
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.2.13676358" > /dev/null
+          ls -d $ANDROID_HOME/ndk/28.2.13676358
+
       - name: Install toolchain deps
         run: |
           sudo apt-get update -qq
