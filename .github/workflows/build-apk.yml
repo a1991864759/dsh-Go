@@ -72,6 +72,11 @@ jobs:
 
       - name: Build APK
         run: DSH_BETA_TOKEN_FILE= bash tooling/build-apk.sh -f arm64
+        env:
+          # The runner preinstalls several NDKs and points ANDROID_NDK_HOME at
+          # one of them; tawcroot pins 28.2 and build.py trusts that variable
+          # first, so override it for this step.
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
 
       - name: Show artifacts
         run: |
