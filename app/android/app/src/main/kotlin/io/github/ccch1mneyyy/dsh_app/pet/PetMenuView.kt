@@ -570,6 +570,12 @@ private class PetWheelIcons {
     private fun outline(item: PetMenuItem) = Path().apply {
         when (item) {
             PetMenuItem.ASK -> bubble()
+            // 看思考: a pulse line — what the model is working through.
+            PetMenuItem.THOUGHT -> {
+                moveTo(3.5f, 12f); lineTo(7.2f, 12f)
+                lineTo(9.4f, 6.5f); lineTo(12.6f, 17.5f)
+                lineTo(14.8f, 10.6f); lineTo(20.5f, 10.6f)
+            }
             PetMenuItem.NEW_CHAT -> {
                 bubble()
                 moveTo(12f, 7.6f); lineTo(12f, 13.4f)
