@@ -32,15 +32,17 @@ PetTarget? petThoughtTarget(PetSignals signals) {
   return null;
 }
 
+/// The newest step's two halves: its reasoning and its own answer text. The
+/// `⏵ 在做什么` line is written in the answer, the reasoning above it; which one
+/// the pet shows depends on 只显示 ⏵ 概括行, so both come along.
+typedef PetThoughtStep = ({String reasoning, String text});
+
 /// The newest step still streaming, else the last one. Null when the
 /// conversation is not loaded (a remote host the pet only sees events for).
-String? petThoughtText(ChatState chat) {
+PetThoughtStep? petThoughtStep(ChatState chat) {
   for (final item in chat.items.reversed) {
     if (item is! AssistantChatItem) continue;
-    final reasoning = item.reasoning.trim();
-    if (reasoning.isNotEmpty) return reasoning;
-    // A streaming step with no reasoning yet: its own text is all there is.
-    return item.streaming ? item.text : null;
+    return (reasoning: item.reasoning, text: item.text);
   }
   return null;
 }
@@ -71,10 +73,12 @@ String? petThoughtLine(Ref ref, PetSignals signals, PetPrefs prefs) {
   
   final target = petThoughtTarget(signals);
   if (target == null) return _keep();
-  final raw = petThoughtText(ref.watch(chatProvider(target.sessionId)));
-  final line = raw == null
-      ? null
-      : (prefs.thoughtOnlyNarration ? extractNarration(raw) : lastSentence(raw));
+  final step = petThoughtStep(ref.watch(chatProvider(target.sessionId)));
+  if (step == null) return _keep();
+  // 只显示 ⏵ 行: the model's own summary, wherever it wrote it.
+  final line = prefs.thoughtOnlyNarration
+      ? (extractNarration(step.text) ?? extractNarration(step.reasoning))
+      : (lastSentence(step.reasoning) ?? lastSentence(step.text));
   if (line == null || line.isEmpty) return _keep();
   final next = clipThought(line, prefs.thoughtChars);
   if (next == _shown) return _shown;
