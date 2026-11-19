@@ -317,6 +317,8 @@ class PetState {
     this.reduceMotion = false,
     this.canStop = false,
     this.hosts = const [],
+    this.thought,
+    this.thoughtOn = false,
   });
 
   final PetStateName state;
@@ -357,6 +359,13 @@ class PetState {
   /// The floating pet's 切换主机, when there are two or more; else empty.
   final List<PetHostChoice> hosts;
 
+  /// What the model is thinking now, one line over the pet's head under the
+  /// bubble. Null: nothing to say.
+  final String? thought;
+
+  /// 显示思考: [thought] rides along on its own; off keeps it for 「看思考」 only.
+  final bool thoughtOn;
+
   Map<String, Object?> toMap() => {
     'state': state.name,
     'tier': tier,
@@ -370,7 +379,9 @@ class PetState {
     'quiet': quiet,
     'reduceMotion': reduceMotion,
     'canStop': canStop,
-    'hosts': [for (final h in hosts) h.toMap()],
+    'hosts': <Object?>[for (final h in hosts) h.toMap()],
+    'thought': ?thought,
+    'thoughtOn': thoughtOn,
   };
 
   @override
@@ -388,6 +399,8 @@ class PetState {
       other.quiet == quiet &&
       other.reduceMotion == reduceMotion &&
       other.canStop == canStop &&
+      other.thought == thought &&
+      other.thoughtOn == thoughtOn &&
       listEquals(other.hosts, hosts);
 
   @override
@@ -404,6 +417,8 @@ class PetState {
     quiet,
     reduceMotion,
     canStop,
+    thought,
+    thoughtOn,
     Object.hashAll(hosts),
   );
 

@@ -131,6 +131,7 @@ class PetSettingsPage extends ConsumerWidget {
               ),
               // App 外显示 (the overlay).
               if (hasOutsideOverlay) const PetOverlaySettingsSection(),
+              const PetThoughtSection(),
             ],
           ),
         ),

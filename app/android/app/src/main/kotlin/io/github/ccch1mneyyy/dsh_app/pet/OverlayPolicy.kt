@@ -93,12 +93,13 @@ data class PetHost(val ref: String, val label: String, val current: Boolean)
 
 /** The long-press menu's rows (docs/design/pets.md §2.7): shortcuts only where they apply. */
 enum class PetMenuItem {
-    ASK, NEW_CHAT, SCREENSHOT, STOP, SWITCH_HOST, SNOOZE, SETTINGS;
+    ASK, THOUGHT, NEW_CHAT, SCREENSHOT, STOP, SWITCH_HOST, SNOOZE, SETTINGS;
 
     companion object {
         /** [screenshots]: whether this Android can take one (the accessibility screenshot, Android 11+). */
         fun of(push: PetPush?, screenshots: Boolean): List<PetMenuItem> = buildList {
             add(ASK)
+            add(THOUGHT)
             add(NEW_CHAT)
             if (screenshots) add(SCREENSHOT)
             if (push?.canStop == true) add(STOP)
@@ -150,6 +151,10 @@ data class PetPush(
     val canStop: Boolean = false,
     /** The hosts 切换主机 offers; empty with only one. */
     val hosts: List<PetHost> = emptyList(),
+    /** 显示思考: one line of what the model is doing, above the pet's bubble. */
+    val thought: String? = null,
+    /** 显示思考 is on: the line rides along by itself. Off: only 「看思考」 shows it. */
+    val thoughtOn: Boolean = false,
 ) {
     /** Idle and asleep play a still frame with an occasional action; the rest plays at full speed. */
     val calm: Boolean get() = state == PetPack.IDLE || state == SLEEPING || state == ROAM
@@ -164,6 +169,7 @@ data class PetPush(
         private const val MAX_TEXT = 48
         private const val MAX_TITLE = 40
         private const val MAX_DETAIL = 120
+        private const val MAX_THOUGHT = 80
         private const val MAX_HOSTS = 8
         private const val MAX_ID = 300
         private val ID = Regex("[a-z0-9][a-z0-9._-]*")
@@ -206,6 +212,8 @@ data class PetPush(
                         ?.let { "custom:${Math.round(it.coerceIn(PetSize.CUSTOM_MIN, PetSize.CUSTOM_MAX) * 10) / 10f}" } ?: "medium"
                     else -> "medium"
                 },
+                thought = clean(m["thought"] as? String, MAX_THOUGHT),
+                thoughtOn = m["thoughtOn"] == true,
                 quiet = m["quiet"] == true,
                 reduceMotion = m["reduceMotion"] == true,
                 canStop = m["canStop"] == true,

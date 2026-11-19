@@ -433,7 +433,8 @@ internal object PetOverlay {
                     retarget()
                     companionView?.freeze(dimmed)
                     if (dimmed || !systemShown || companionView != null) stopLoop() else startLoop()
-                    showBubble(d.bubble)
+                    showBubble(d.bubble ?: thoughtBubble(machine.last))
+                    followThought()
                     if (returnAsk) {
                         returnAsk = false
                         main.post { if (!machine.appForeground && alive(petTicket)) showAsk(askFresh) }
@@ -1281,6 +1282,49 @@ internal object PetOverlay {
 
     // ---- bubble ---------------------------------------------------------------------------------
 
+    /**
+     * 显示思考 without a bubble: a card that shows only the line, so thinking is visible the whole
+     * time a turn runs. Null when there is no thought (then nothing is shown, as before).
+     */
+    private fun thoughtBubble(p: PetPush?): PetBubble? {
+        val line = p?.thought ?: return null
+        if (!p.thoughtOn) return null
+        if (p.bubble != null) return null
+        return PetBubble(
+            id = "thought|${p.sessionId}",
+            kind = "thought",
+            text = line,
+            title = null,
+            sessionId = p.sessionId,
+            host = p.host,
+            untilMs = Long.MAX_VALUE,
+        )
+    }
+
+    /** The thought line already drawn in the bubble; null: none. */
+    private var bubbleThought: String? = null
+
+    /** 显示思考 changed: rewrite the line in the bubble already on screen, no window churn. */
+    private fun followThought() {
+        val line = machine.last?.thought?.takeIf { machine.last?.thoughtOn == true }
+        if (line == bubbleThought) return
+        bubbleThought = line
+        val view = bubbleView ?: return
+        if (!alive(windowTickets[view])) return
+        val b = machine.last?.bubble
+        if (b == null) view.bindThoughtOnly(line.orEmpty()) else view.bind(b, line)
+        val card = view.measureCard()
+        bubbleCard = card
+        val place = bubblePlace(card, view.tailPx) ?: return
+        view.setTail(place.tailAt, place.tail)
+        val p = bubbleParams ?: return
+        p.width = place.w
+        p.height = place.h
+        p.x = place.pos.x
+        p.y = place.pos.y
+        update(view, p)
+    }
+
     private fun showBubble(b: PetBubble?) {
         if (b == null || dragging || dimmed || slideAnim != null || menuView != null || closingMenu != null || capture.inFlight) {
             removeBubble()
@@ -1291,7 +1335,7 @@ internal object PetOverlay {
         removeBubble()
         val ticket = windows.claim(OverlayWindowOwner.Role.BUBBLE) ?: return
         val view = BubbleView(ctx) { if (alive(ticket)) onBubbleTap(b) }
-        view.bind(b)
+        view.bind(b, machine.last?.thought?.takeIf { machine.last?.thoughtOn == true })
         b.ask?.let { ask ->
             // Laid out once first: the buttons depend on whether the request's text shows whole.
             view.measureCard()
@@ -1528,6 +1572,7 @@ internal object PetOverlay {
 
     private fun menuLabel(item: PetMenuItem): String = AppStrings.get(app, when (item) {
         PetMenuItem.ASK -> R.string.pet_ask
+        PetMenuItem.THOUGHT -> R.string.pet_thought
         PetMenuItem.NEW_CHAT -> R.string.pet_new_chat
         PetMenuItem.SCREENSHOT -> R.string.pet_screenshot
         PetMenuItem.STOP -> R.string.pet_stop
@@ -1538,6 +1583,7 @@ internal object PetOverlay {
 
     private fun wheelLabel(item: PetMenuItem): String = AppStrings.get(app, when (item) {
         PetMenuItem.ASK -> R.string.pet_ask
+        PetMenuItem.THOUGHT -> R.string.pet_thought
         PetMenuItem.NEW_CHAT -> R.string.pet_new_chat
         PetMenuItem.SCREENSHOT -> R.string.pet_wheel_screenshot
         PetMenuItem.STOP -> R.string.pet_wheel_stop
@@ -1546,6 +1592,36 @@ internal object PetOverlay {
         PetMenuItem.SETTINGS -> R.string.pet_wheel_settings
     })
 
+    /**
+     * 「看思考」: shows the current line once, even with 显示思考 off. Same card as a bubble, so it
+     * follows the pet and goes away on its own.
+     */
+    private fun showThought() {
+        dismissMenu(animated = true)
+        val line = machine.last?.thought
+        if (line.isNullOrEmpty()) {
+            Toast.makeText(app, AppStrings.get(app, R.string.pet_thought_empty), Toast.LENGTH_SHORT).show()
+            return
+        }
+        val view = bubbleView
+        if (view != null && alive(windowTickets[view])) {
+            view.bindThoughtOnly(line)
+            return
+        }
+        val p = machine.last
+        showBubble(
+            PetBubble(
+                id = "thought|once|${SystemClock.uptimeMillis()}",
+                kind = "thought",
+                text = line,
+                title = null,
+                sessionId = p?.sessionId,
+                host = p?.host,
+                untilMs = SystemClock.uptimeMillis() + 6_000,
+            ),
+        )
+    }
+
     private fun onMenu(item: PetMenuItem, ticket: OverlayWindowOwner.Ticket, target: PetPush?) {
         machine.onTouch(now())
         when (item) {
@@ -1553,6 +1629,7 @@ internal object PetOverlay {
                 dismissMenu(animated = true)
                 showAsk(fresh = item == PetMenuItem.NEW_CHAT)
             }
+            PetMenuItem.THOUGHT -> showThought()
             PetMenuItem.SCREENSHOT -> captureScreenshot()
             PetMenuItem.STOP -> {
                 dismissMenu(animated = true)

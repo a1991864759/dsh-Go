@@ -119,6 +119,8 @@
     <string name="pet_probe_done">做完了</string>
     <string name="pet_probe_public">有一轮完成了</string>
     <string name="pet_ask">问一句</string>
+    <string name="pet_thought">看思考</string>
+    <string name="pet_thought_empty">还没有可以看的</string>
     <string name="pet_new_chat">新对话</string>
     <string name="pet_screenshot">截图并问 DSH-Go</string>
     <string name="pet_wheel_screenshot">截图提问</string>

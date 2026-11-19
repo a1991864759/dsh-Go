@@ -124,6 +124,8 @@
     <string name="pet_probe_done">Done</string>
     <string name="pet_probe_public">A turn finished</string>
     <string name="pet_ask">Ask</string>
+    <string name="pet_thought">Show thinking</string>
+    <string name="pet_thought_empty">Nothing to show yet</string>
     <string name="pet_new_chat">New chat</string>
     <string name="pet_screenshot">Screenshot &amp; ask DSH-Go</string>
     <string name="pet_wheel_screenshot">Screenshot</string>

@@ -27,6 +27,7 @@ import 'pet_overlay_actions.dart';
 import 'pet_library.dart';
 import 'pet_pack.dart';
 import 'pet_prefs.dart';
+import 'pet_thought.dart';
 import 'pet_sheets.dart';
 import 'pet_state.dart';
 
@@ -673,6 +674,8 @@ final petScopedStateProvider = Provider.family<PetState, PetScope>((ref, scope) 
     reduceMotion: ref.watch(performanceDefaultsProvider.select((p) => p.reduceMotion)),
     canStop: signals.runs.any((r) => PetTarget(r.host, r.root) == petTarget(global, signals) && r.host == activeHost),
     hosts: ref.watch(petHostChoicesProvider),
+    thought: prefs.quiet ? null : petThoughtLine(ref, signals, prefs),
+    thoughtOn: prefs.thought && !prefs.quiet,
   );
 });
 

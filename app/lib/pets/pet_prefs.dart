@@ -60,6 +60,10 @@ class PetPrefs {
     this.overlayRenderer = PetOverlayRenderer.pixel,
     this.floatZoom = 0.9,
     this.floatY = 0,
+    this.thought = false,
+    this.thoughtOnlyNarration = true,
+    this.thoughtSeconds = 3,
+    this.thoughtChars = 32,
     this.loaded = false,
   });
 
@@ -90,6 +94,22 @@ class PetPrefs {
   final PetOverlayRenderer overlayRenderer;
   final double floatZoom;
   final double floatY;
+
+  /// 显示思考: the model's `⏵` line rides under the bubble while it works.
+  final bool thought;
+
+  /// Only the `⏵` line (the model's own summary), never the reasoning itself.
+  final bool thoughtOnlyNarration;
+
+  /// How often the thought line may change, seconds (1–10).
+  final int thoughtSeconds;
+
+  /// How many characters of it show (16–64).
+  final int thoughtChars;
+
+  /// The refresh interval as a Duration.
+  Duration get thoughtInterval => Duration(seconds: thoughtSeconds.clamp(1, 10).toInt());
+
   final bool loaded;
 
   bool get enabled => packId != noPetId;
@@ -108,6 +128,10 @@ class PetPrefs {
     PetOverlayRenderer? overlayRenderer,
     double? floatZoom,
     double? floatY,
+    bool? thought,
+    bool? thoughtOnlyNarration,
+    int? thoughtSeconds,
+    int? thoughtChars,
     bool? loaded,
   }) => PetPrefs(
     packId: packId ?? this.packId,
@@ -120,6 +144,10 @@ class PetPrefs {
     overlayRenderer: overlayRenderer ?? this.overlayRenderer,
     floatZoom: floatZoom ?? this.floatZoom,
     floatY: floatY ?? this.floatY,
+    thought: thought ?? this.thought,
+    thoughtOnlyNarration: thoughtOnlyNarration ?? this.thoughtOnlyNarration,
+    thoughtSeconds: thoughtSeconds ?? this.thoughtSeconds,
+    thoughtChars: thoughtChars ?? this.thoughtChars,
     loaded: loaded ?? this.loaded,
   );
 
@@ -136,11 +164,15 @@ class PetPrefs {
       other.overlayRenderer == overlayRenderer &&
       other.floatZoom == floatZoom &&
       other.floatY == floatY &&
+      other.thought == thought &&
+      other.thoughtOnlyNarration == thoughtOnlyNarration &&
+      other.thoughtSeconds == thoughtSeconds &&
+      other.thoughtChars == thoughtChars &&
       other.loaded == loaded;
 
   @override
   int get hashCode => Object.hash(packId, packExplicit, size, customHeight, quiet, position, hiddenUntil,
-      overlayRenderer, floatZoom, floatY, loaded);
+      overlayRenderer, floatZoom, floatY, thought, thoughtOnlyNarration, thoughtSeconds, thoughtChars, loaded);
 }
 
 class PetPrefsController extends Notifier<PetPrefs> {
@@ -153,6 +185,10 @@ class PetPrefsController extends Notifier<PetPrefs> {
     hidden: 'pet.hidden_until',
     renderer: 'pet.overlay_renderer',
     framing: 'pet.overlay_framing',
+    thought: 'pet.thought',
+    thoughtOnlyNarration: 'pet.thought_narration_only',
+    thoughtSeconds: 'pet.thought_seconds',
+    thoughtChars: 'pet.thought_chars',
   );
 
   late Future<void> _loaded;
@@ -203,6 +239,10 @@ class PetPrefsController extends Notifier<PetPrefs> {
         overlayRenderer: PetOverlayRenderer.fromName(prefs.getString(keys.renderer)),
         floatZoom: zoom,
         floatY: y,
+        thought: prefs.getBool(keys.thought) ?? false,
+        thoughtOnlyNarration: prefs.getBool(keys.thoughtOnlyNarration) ?? true,
+        thoughtSeconds: (prefs.getInt(keys.thoughtSeconds) ?? 3).clamp(1, 10).toInt(),
+        thoughtChars: (prefs.getInt(keys.thoughtChars) ?? 32).clamp(16, 64).toInt(),
         loaded: true,
       );
     } catch (_) {
@@ -267,6 +307,27 @@ class PetPrefsController extends Notifier<PetPrefs> {
     return _save((s) => s.copyWith(floatZoom: zoom, floatY: y),
         (p) => p.setString(keys.framing, jsonEncode({'zoom': zoom, 'y': y})));
   }
+  /// 显示思考: the model's line under the bubble while it works.
+  Future<void> setThought(bool v) => _save((s) => s.copyWith(thought: v), (p) => p.setBool(keys.thought, v));
+
+  /// Only the `⏵` line, never the reasoning itself.
+  Future<void> setThoughtOnlyNarration(bool v) => _save(
+    (s) => s.copyWith(thoughtOnlyNarration: v),
+    (p) => p.setBool(keys.thoughtOnlyNarration, v),
+  );
+
+  /// How often the line may change, seconds (1–10).
+  Future<void> setThoughtSeconds(int v) {
+    final n = v.clamp(1, 10).toInt();
+    return _save((s) => s.copyWith(thoughtSeconds: n), (p) => p.setInt(keys.thoughtSeconds, n));
+  }
+
+  /// How many characters of it show (16–64).
+  Future<void> setThoughtChars(int v) {
+    final n = v.clamp(16, 64).toInt();
+    return _save((s) => s.copyWith(thoughtChars: n), (p) => p.setInt(keys.thoughtChars, n));
+  }
+
   Future<void> setPosition(double v) {
     final x = v.clamp(0.0, 1.0);
     return _save((s) => s.copyWith(position: x), (p) => p.setDouble(keys.position, x));

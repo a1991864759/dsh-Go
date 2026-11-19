@@ -156,12 +156,31 @@ internal class BubbleView(context: Context, onTap: () -> Unit) : LinearLayout(co
         ellipsize = TextUtils.TruncateAt.END
         visibility = GONE
     }
+    /** 显示思考: one line of what the model is doing, above the title line. */
+    private val thought = TextView(context).apply {
+        textSize = 12f
+        setTextColor(palette.muted)
+        maxLines = 1
+        ellipsize = TextUtils.TruncateAt.END
+        visibility = GONE
+    }
     private val actions = LinearLayout(context).apply { orientation = VERTICAL; visibility = GONE }
     private var wide = false
+
+    /** 显示思考 only: no bubble, one line over the pet (the thought's own card). */
+    fun bindThoughtOnly(line: String) {
+        thought.text = line
+        thought.visibility = VISIBLE
+        text.visibility = GONE
+        detail.visibility = GONE
+        actions.visibility = GONE
+        contentDescription = line
+    }
 
     init {
         orientation = VERTICAL
         background = bg
+        addView(thought, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply { bottomMargin = context.dp(2f) })
         addView(text, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
         addView(detail, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply { topMargin = context.dp(2f) })
         addView(actions, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply { topMargin = context.dp(8f) })
@@ -178,14 +197,16 @@ internal class BubbleView(context: Context, onTap: () -> Unit) : LinearLayout(co
     /** How far the tail reaches out of the card. */
     val tailPx: Int get() = bg.tailH.toInt()
 
-    fun bind(b: PetBubble) {
+    fun bind(b: PetBubble, line: String? = null) {
+        thought.text = line
+        thought.visibility = if (line.isNullOrEmpty()) GONE else VISIBLE
         text.text = b.line
         val more = b.ask?.text ?: b.detail
         detail.text = more
         detail.maxLines = if (b.ask != null) ASK_LINES else DETAIL_LINES
         detail.visibility = if (more == null) GONE else VISIBLE
         wide = b.ask != null
-        contentDescription = listOfNotNull(b.line, more).joinToString("\n")
+        contentDescription = listOfNotNull(line, b.line, more).joinToString("\n")
     }
 
     /** After [measureCard]: the request's text shows whole, nothing cut off at its last line. */
