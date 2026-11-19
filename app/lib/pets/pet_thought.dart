@@ -76,14 +76,31 @@ String? petThoughtFrom(List<PetThoughtStep> steps, {required bool onlyNarration}
   return first((s) => lastSentence(s.reasoning)) ?? first((s) => lastSentence(s.text));
 }
 
-/// The last finished sentence of [text]: what the model said last, whole.
-/// Used only when 只显示 ⏵ 行 is off.
-String? lastSentence(String text) {
+/// The tail of [text]: what the model said last, whole.
+///
+/// A thought usually ends on a short hinge — 「让我查一下。」「先看看屏幕状态。」
+/// — which says nothing on its own. So the last sentence is joined with the one
+/// before it until the line carries at least [minChars] characters (or there is
+/// nothing left to join). The result is what the person reads: the most recent
+/// *complete* thought, not the last few characters of it.
+String? lastSentence(String text, {int minChars = 24}) {
   final clean = text.replaceAll(RegExp(r'[\x00-\x08\x0B-\x1F\x7F]'), ' ').trimRight();
   if (clean.isEmpty) return null;
-  final match = RegExp(r'[^\n。．!?！？]*[。．!?！？]').allMatches(clean).lastOrNull;
-  final line = (match?.group(0) ?? clean.split('\n').last).trim();
-  return line.isEmpty ? null : line;
+  final sentences = [
+    for (final m in RegExp(r'[^\n。．!?！？]*[。．!?！？]').allMatches(clean))
+      if (m.group(0)!.trim().isNotEmpty) m.group(0)!.trim(),
+  ];
+  // No terminator yet (still streaming): the last line is all there is.
+  if (sentences.isEmpty) {
+    final line = clean.split('\n').last.trim();
+    return line.isEmpty ? null : line;
+  }
+  var joined = sentences.last;
+  for (var i = sentences.length - 2; i >= 0; i--) {
+    if (joined.runes.length >= minChars) break;
+    joined = '${sentences[i]}$joined';
+  }
+  return joined.isEmpty ? null : joined;
 }
 
 /// Cut to [max] characters (not runes: a CJK char is one, an emoji is two).
