@@ -32,6 +32,7 @@ import '../../state/agents_state.dart' show subagentParentProvider;
 import '../../state/attachments.dart';
 import '../../state/balance_state.dart';
 import '../../state/chat_error_text.dart';
+import '../../pets/pet_thought.dart';
 import '../../state/chat_state.dart';
 import '../../state/chat_ui_parts.dart';
 import '../../state/commands_state.dart';
@@ -1685,6 +1686,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     ref.listen(readyComposeProvider, (_, next) {
       if (next != null) scheduleMicrotask(_takeCompose);
     });
+    // Keeps the pet's thought line fed while this screen is alive; the line
+    // outlives the screen so the floating pet still has something to say.
+    if (sessionId != null) ref.watch(petThoughtFeedProvider(sessionId));
     if (sessionId != null) {
       // A finished turn spent money: re-read the balance (throttled).
       ref.listen(chatProvider(sessionId).select((s) => s.running), (previous, running) {

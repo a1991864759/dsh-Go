@@ -32,19 +32,48 @@ PetTarget? petThoughtTarget(PetSignals signals) {
   return null;
 }
 
-/// The newest step's two halves: its reasoning and its own answer text. The
+/// One assistant step's two halves: its reasoning and its own answer text. The
 /// `⏵ 在做什么` line is written in the answer, the reasoning above it; which one
 /// the pet shows depends on 只显示 ⏵ 概括行, so both come along.
 typedef PetThoughtStep = ({String reasoning, String text});
 
-/// The newest step still streaming, else the last one. Null when the
-/// conversation is not loaded (a remote host the pet only sees events for).
-PetThoughtStep? petThoughtStep(ChatState chat) {
+/// The last [max] assistant steps, newest first. A turn writes several: the
+/// reasoning comes first, the answer after it, and a streaming draft may have
+/// neither yet — reading only the newest one shows nothing for most of a turn.
+List<PetThoughtStep> petThoughtSteps(ChatState chat, {int max = 8}) {
+  final out = <PetThoughtStep>[];
   for (final item in chat.items.reversed) {
     if (item is! AssistantChatItem) continue;
-    return (reasoning: item.reasoning, text: item.text);
+    final step = (reasoning: item.reasoning, text: item.text);
+    if (step.reasoning.isEmpty && step.text.isEmpty) continue;
+    out.add(step);
+    if (out.length >= max) break;
   }
-  return null;
+  return out;
+}
+
+/// A line for the pet out of [steps], newest first.
+///
+/// 只显示 ⏵ 行 looks for the model's own summary across the steps; when it wrote
+/// none (it is not obliged to), the last finished sentence steps in rather than
+/// leaving the bubble empty. The full mode prefers the reasoning, then the text.
+String? petThoughtFrom(List<PetThoughtStep> steps, {required bool onlyNarration}) {
+  if (steps.isEmpty) return null;
+  String? first(String? Function(PetThoughtStep) pick) {
+    for (final step in steps) {
+      final line = pick(step);
+      if (line != null && line.trim().isNotEmpty) return line.trim();
+    }
+    return null;
+  }
+
+  if (onlyNarration) {
+    return first((s) => extractNarration(s.text)) ??
+        first((s) => extractNarration(s.reasoning)) ??
+        first((s) => lastSentence(s.reasoning)) ??
+        first((s) => lastSentence(s.text));
+  }
+  return first((s) => lastSentence(s.reasoning)) ?? first((s) => lastSentence(s.text));
 }
 
 /// The last finished sentence of [text]: what the model said last, whole.
@@ -73,12 +102,13 @@ String? petThoughtLine(Ref ref, PetSignals signals, PetPrefs prefs) {
   
   final target = petThoughtTarget(signals);
   if (target == null) return _keep();
-  final step = petThoughtStep(ref.watch(chatProvider(target.sessionId)));
-  if (step == null) return _keep();
-  // 只显示 ⏵ 行: the model's own summary, wherever it wrote it.
-  final line = prefs.thoughtOnlyNarration
-      ? (extractNarration(step.text) ?? extractNarration(step.reasoning))
-      : (lastSentence(step.reasoning) ?? lastSentence(step.text));
+  // Only the published line: watching the transcript here would create a
+  // second ChatController for a conversation nobody has open (it would connect,
+  // sync and hold the keep-alive), and the pet must not do that.
+  final raw = publishedThought(target.sessionId);
+  final line = raw == null
+      ? null
+      : (prefs.thoughtOnlyNarration ? (extractNarration(raw) ?? raw) : raw);
   if (line == null || line.isEmpty) return _keep();
   final next = clipThought(line, prefs.thoughtChars);
   if (next == _shown) return _shown;
@@ -96,3 +126,53 @@ DateTime? _shownAt;
 /// The line already on screen: a blank read (a new step starting) does not
 /// blink it away, it waits for the next line to replace it.
 String? _keep() => _shown;
+
+// -----------------------------------------------------------------------------
+// 会话页写、宠物读
+
+/// The newest thought line, per conversation, pushed by the chat screen while it
+/// is on screen (see [publishThought]).
+///
+/// 不变量: the pet overlay outlives the chat screen (the app may be in the
+/// background for an hour), and `chatProvider` is autoDispose with a one-minute
+/// tail. Reading the transcript from the pet therefore only works while someone
+/// watches it — the pet must be fed instead. This map is that feed.
+final _published = <String, String>{};
+
+/// Records what [sessionId] is thinking now; null clears it. Called by the chat
+/// screen on every rebuild while a turn runs.
+void publishThought(String sessionId, String? line) {
+  final next = line?.trim();
+  if (next == null || next.isEmpty) {
+    _published.remove(sessionId);
+  } else {
+    _published[sessionId] = next;
+  }
+}
+
+/// The line last published for [sessionId], if any.
+String? publishedThought(String sessionId) => _published[sessionId];
+
+/// Forgets a conversation (its turn ended): 「看思考」 says there is nothing.
+void clearThought(String sessionId) => _published.remove(sessionId);
+
+/// Keeps [_published] fed while [sessionId]'s screen is alive: watching it is
+/// what starts the feed. The chat screen watches it once; everything else reads
+/// the map, which survives the screen (and its autoDispose transcript).
+final petThoughtFeedProvider = Provider.family<void, String>((ref, sessionId) {
+  final prefs = ref.watch(petPrefsProvider);
+  ref.listen<ChatState>(chatProvider(sessionId), (previous, next) {
+    if (!next.running) {
+      clearThought(sessionId);
+      return;
+    }
+    publishThought(
+      sessionId,
+      petThoughtFrom(petThoughtSteps(next), onlyNarration: prefs.thoughtOnlyNarration),
+    );
+  }, fireImmediately: true);
+  ref.onDispose(() {
+    // The screen is gone: nothing more is published, but what was stays for the
+    // pet (a turn may still be running while the app sits in the background).
+  });
+});
